@@ -35,7 +35,7 @@ This repository contains a Dockerfile to build a Kali Linux Docker image with ad
     ```bash
     docker buildx build --load -f Dockerfile -t kali-linux .
     ```
-    Replace "kali-linux" with on makefile with your desired image name.
+    Replace "kali-linux" with your desired image name.
 4. Run the container with make:
      ```bash
     make run
