@@ -6,17 +6,13 @@ ARG USERNAME=josu
 ARG PASSWORD=josu
 
 # Execute any commands on top of the current image as a new layer and commit the results. for caching don't execute multiple command on RUN
-RUN apt-get update
-RUN DEBIAN_FRONTEND=noninteractive apt-get upgrade -y
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y kali-linux-default kali-desktop-xfce sudo kitty neofetch
-RUN useradd -m ${USERNAME} -p $(openssl passwd ${PASSWORD})
-RUN usermod -aG sudo ${USERNAME}
-RUN chsh -s $(which zsh) ${USERNAME}
-# RUN chsh -s $(which kitty) ${USERNAME}
-
-# set hostname
-# RUN echo ${USERNAME} > /etc/hostname
-# RUN sed -i 's/localhost$/localhost ${USERNAME}/' /etc/hosts
+# update repository and donwload kali linux matapackage
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get upgrade -y && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y kali-linux-default kali-desktop-xfce sudo kitty neofetch alacritty && \
+    useradd -m ${USERNAME} -p $(openssl passwd ${PASSWORD}) && \
+    usermod -aG sudo ${USERNAME} && \
+    chsh -s $(which zsh) ${USERNAME}
 
 # Set the working directory for any subsequent ADD, COPY, CMD, ENTRYPOINT, or RUN instructions that follow it in the Dockerfile.
 WORKDIR /home/${USERNAME}
@@ -28,22 +24,19 @@ USER ${USERNAME}
 RUN sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 
 # powerlevel10k
-RUN git clone --depth=1 https://github.com/romkatv/powerlevel10k.git /home/${USERNAME}/.config/powerlevel10k
-RUN echo 'source /home/${USERNAME}/.config/powerlevel10k/powerlevel10k.zsh-theme' >> ${ZDOTDIR:-$HOME}/.zshrc
+RUN git clone --depth=1 https://github.com/romkatv/powerlevel10k.git /home/${USERNAME}/.config/powerlevel10k && \
+    echo 'source /home/${USERNAME}/.config/powerlevel10k/powerlevel10k.zsh-theme' >> ~/.zshrc
 
 # oh-my-zsh plugin
 # autosuggestions
-RUN git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
-RUN echo "source ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins}/zsh-autosuggestions/zsh-autosuggestions.zsh" >> ${ZDOTDIR:-$HOME}/.zshrc
+RUN git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions && \
+    echo "source ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins}/zsh-autosuggestions/zsh-autosuggestions.zsh" >> ${ZDOTDIR:-$HOME}/.zshrc
 
 # syntax-highlighting
-RUN git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
-RUN echo "source ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" >> ${ZDOTDIR:-$HOME}/.zshrc
+RUN git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting && \
+    echo "source ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" >> ${ZDOTDIR:-$HOME}/.zshrc
 
 # Copy files or folders from source to the dest path in the image's filesystem.
-COPY config/.zshrc /home/${USERNAME}
+COPY config/.zshrc /home/${USERNAME}/
 COPY config/kitty.conf /home/${USERNAME}/.config/kitty/kitty.conf
-COPY config/.p10k.zsh /home/${USERNAME}
-
-# Set the environment variable key to the value value.
-ENV DISPLAY=:0
+COPY config/.p10k.zsh /home/${USERNAME}/
